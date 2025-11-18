@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Final IHC - Henrique Menezes Tressoldi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        /* CONTAINER GERAL DE CADA TELA */
+        .prototype-row {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            margin-bottom: 100px; 
+            width: 100%;
+            max-width: 1100px;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 50px;
+        }
+
+        /* --- LADO ESQUERDO: O PROTÓTIPO --- */
+        .device-wrapper { margin-right: 40px; }
+        .device-chassis {
+            background-color: #2c3e50;
+            border-radius: 15px;
+            padding: 15px 15px 0 15px;
+            width: 380px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+        }
+        .screen-lcd {
+            background-color: white;
+            width: 100%;
+            height: 500px; 
+            border: 2px solid #555;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .status-bar {
+            background-color: #343a40; color: white; font-size: 0.75em;
+            padding: 5px 10px; display: flex; justify-content: space-between;
+        }
+        .header {
+            background-color: #f1f3f5; padding: 12px; text-align: center;
+            font-weight: 800; color: #0056b3; border-bottom: 1px solid #dee2e6;
+            text-transform: uppercase; font-size: 1em;
+        }
+        .content {
+            padding: 15px; flex-grow: 1; display: flex; flex-direction: column;
+        }
+        
+        /* WIDGETS */
+        .touch-btn {
+            background-color: #fff; border: 2px solid #007bff; color: #007bff;
+            padding: 12px; border-radius: 6px; font-weight: bold;
+            margin-bottom: 8px; text-align: center; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .touch-btn-primary { background-color: #007bff; color: white; }
+        .touch-btn-danger { background-color: #dc3545; border-color: #dc3545; color: white; }
+        
+        .label { font-weight: bold; font-size: 0.85em; margin-top: 8px; color: #495057; }
+        .row-inputs { display: flex; gap: 10px; margin-bottom: 5px; }
+        .col-inputs { flex: 1; }
+        select, input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ced4da; }
+        
+        /* PAINEL FÍSICO */
+        .physical-panel {
+            background-color: #343a40; height: 70px; margin-top: 5px;
+            border-radius: 0 0 10px 10px; display: flex;
+            justify-content: space-around; align-items: center; padding: 0 10px;
+        }
+        .hard-key {
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid #212529; font-weight: bold; color: #fff;
+            background: linear-gradient(145deg, #495057, #212529);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1em; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        .key-start { background: #28a745; border-color: #1e7e34; }
+        .key-stop { background: #dc3545; border-color: #bd2130; }
+        .key-home { background: #007bff; border-color: #0056b3; }
+
+        /* --- LADO DIREITO: A ANÁLISE --- */
+        .analysis-wrapper {
+            flex: 1; max-width: 500px; background-color: #fff3cd;
+            border-left: 6px solid #ffc107; padding: 20px;
+            border-radius: 0 8px 8px 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+        }
+        .analysis-title {
+            font-size: 1.2em; color: #856404; margin-top: 0;
+            border-bottom: 1px solid #ffeeba; padding-bottom: 10px; margin-bottom: 15px;
+        }
+        .guideline-block { margin-bottom: 20px; }
+        .cat-tag {
+            display: inline-block; padding: 3px 8px; border-radius: 4px;
+            font-size: 0.7em; font-weight: bold; text-transform: uppercase;
+            color: white; margin-bottom: 5px;
+        }
+        .cat-geral { background-color: #17a2b8; } 
+        .cat-dados { background-color: #6610f2; } 
+        .cat-info { background-color: #e83e8c; } 
+        
+        .guideline-name { font-weight: bold; color: #333; display: block; margin-bottom: 3px; }
+        .justification { font-size: 0.9em; color: #555; line-height: 1.5; }
+        
+        /* Overlay */
+        .dialog-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 20px; box-sizing: border-box; z-index: 10;
+        }
+        .icon-large { font-size: 3em; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div style="width: 100%; max-width: 900px; background: white; padding: 30px; border-radius: 8px; margin-bottom: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h1 style="color: #0056b3;">Projeto Final IHC</h1>
+        <p><strong>Aluno:</strong> Henrique Menezes Tressoldi</p>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="status-bar"><span>14:30</span><span>Henrique M. Tressoldi</span></div>
+                    <div class="header">Menu Principal</div>
+                    <div class="content">
+                        <div class="touch-btn touch-btn-primary" style="height: 60px; font-size: 1.2em;">📄 IMPRESSÃO</div>
+                        <div class="touch-btn touch-btn-primary" style="height: 60px; font-size: 1.2em;">📑 CÓPIA</div>
+                        <div class="touch-btn touch-btn-primary" style="height: 60px; font-size: 1.2em;">SCAN DIGITALIZAÇÃO</div>
+                        <div style="flex-grow: 1;"></div>
+                        <div class="row-inputs">
+                            <div class="touch-btn col-inputs" style="font-size: 0.8em; background:#f8f9fa; color:#333;">⚙️ Config.</div>
+                            <div class="touch-btn col-inputs" style="font-size: 0.8em; background:#f8f9fa; color:#333;">🕒 Histórico</div>
+                        </div>
+                        <div class="touch-btn" style="font-size: 0.8em; background:#f8f9fa; color:#333;">❓ Ajuda</div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Divisão das funções e organização da geografia da tela</span>
+                <p class="justification">Coloquei as funções principais bem grandes no topo da tela para o usuário achar rápido o que mais usa, como Imprimir e Copiar.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Uso de rótulos (labels) consistentes</span>
+                <p class="justification">Usei ícones junto com o nome das funções. Isso ajuda a identificar o que cada botão faz sem precisar ler tudo com atenção.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-dados">Entrada de Dados</span>
+                <span class="guideline-name">Desativação de comandos não utilizados</span>
+                <p class="justification">Nessa tela inicial, só aparecem os botões que funcionam agora, evitando poluir a tela com coisas que não dá para usar.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="status-bar"><span>Impressão</span><span>USB Conectado</span></div>
+                    <div class="header">Configurar Impressão</div>
+                    <div class="content">
+                        <div class="label">Origem:</div>
+                        <div class="row-inputs" style="margin-bottom: 15px;">
+                            <label><input type="radio" name="origem" checked> USB</label>
+                            <label><input type="radio" name="origem"> Nuvem</label>
+                            <label><input type="radio" name="origem"> Rede</label>
+                        </div>
+                        <div class="label" style="background: #eee; padding: 5px;">Arquivo: Tese_Final.pdf</div>
+                        <div class="row-inputs">
+                            <div class="col-inputs"><div class="label">Cópias</div><input type="number" value="1"></div>
+                            <div class="col-inputs"><div class="label">Cor</div><select><option>P&B</option><option>Color</option></select></div>
+                        </div>
+                        <div class="row-inputs">
+                            <div class="col-inputs"><div class="label">Papel</div><select><option>A4</option><option>Carta</option></select></div>
+                            <div class="col-inputs"><div class="label">Duplex</div><select><option>Simples</option><option>Frente/Verso</option></select></div>
+                        </div>
+                        <div style="margin-top:auto; text-align:center; color:#555; font-size:0.8em;">Pressione [ ▶ ] para Imprimir</div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-dados">Entrada de Dados</span>
+                <span class="guideline-name">Eliminação de entradas que possam ser default</span>
+                <p class="justification">Já deixei preenchido "1 cópia" e "A4" como padrão, porque é o que a maioria usa, assim economiza cliques.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Feedback significativo</span>
+                <p class="justification">A barra de cima avisa "USB Conectado", confirmando que o pen drive funcionou antes mesmo de tentar imprimir.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Diminuição da quantidade de dados</span>
+                <p class="justification">Escondi configurações complicadas e deixei só o básico na tela para não confundir o usuário.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="status-bar"><span>Cópia</span><span>Pronta</span></div>
+                    <div class="header">Ajustes de Cópia</div>
+                    <div class="content">
+                        <div class="label">Quantidade:</div>
+                        <input type="number" value="1" style="font-size: 2em; height: 50px; width: 80px; text-align: center;">
+                        <div class="row-inputs" style="margin-top: 10px;">
+                            <div class="col-inputs"><div class="label">Cor</div><select><option>Preto</option><option>Color</option></select></div>
+                            <div class="col-inputs"><div class="label">Qualidade</div><select><option>Normal</option><option>Rascunho</option></select></div>
+                        </div>
+                        <div class="label">Densidade (Claro - Escuro):</div>
+                        <input type="range" min="1" max="5" style="width: 100%;">
+                        <div class="label">Zoom (50% - 200%):</div>
+                        <input type="range" min="50" max="200" value="100" style="width: 100%;">
+                        <div class="label">Opção:</div>
+                        <label><input type="checkbox"> Frente e Verso</label>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Usar displays analógicos</span>
+                <p class="justification">Para o Zoom e a Densidade, usei barras deslizantes (sliders). É mais fácil ver visualmente se está aumentando ou diminuindo do que digitar números.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Consistência</span>
+                <p class="justification">A tecla física verde "Play" sempre inicia a ação em todas as telas, criando um padrão fácil de lembrar.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-dados">Entrada de Dados</span>
+                <span class="guideline-name">Manutenção da consistência</span>
+                <p class="justification">Segui uma ordem lógica: primeiro quantas cópias, depois como elas devem ser (cor, tamanho), facilitando o raciocínio.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="status-bar"><span>Scanner</span><span>Rede Ativa</span></div>
+                    <div class="header">Digitalização</div>
+                    <div class="content">
+                        <div class="label">Destino:</div>
+                        <select style="font-size: 1.1em; background: #e3f2fd;">
+                            <option>📧 E-mail</option>
+                            <option>📂 Pasta na Rede</option>
+                            <option>💾 Pen Drive</option>
+                            <option>☁️ Nuvem</option>
+                        </select>
+                        <div class="label" style="margin-top: 15px;">Para:</div>
+                        <input type="text" value="usuario@empresa.com">
+                        <div class="row-inputs" style="margin-top: 10px;">
+                            <div class="col-inputs"><div class="label">Formato</div><select><option>PDF</option><option>JPG</option></select></div>
+                            <div class="col-inputs"><div class="label">Resolução</div><select><option>150 dpi</option><option>300 dpi</option></select></div>
+                        </div>
+                        <div class="touch-btn touch-btn-primary" style="margin-top: auto;">ENVIAR AGORA</div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Uso de linguagem simples</span>
+                <p class="justification">Usei termos do dia a dia como "E-mail" e "Pasta", em vez de nomes técnicos complicados de rede.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-dados">Entrada de Dados</span>
+                <span class="guideline-name">Adaptação da entrada ao usuário</span>
+                <p class="justification">O sistema já deixa o último e-mail usado preenchido, ajudando quem sempre manda para o mesmo lugar.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Uso de janelas/painéis</span>
+                <p class="justification">Separei bem a parte de "Destino" da parte de "Configuração" para a tela ficar organizada e não misturar as coisas.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header" style="background-color: #f8d7da; color: #721c24;">⚠️ AÇÃO NECESSÁRIA</div>
+                    <div class="dialog-overlay">
+                        <div class="icon-large">📄🚫</div>
+                        <h2 style="color: #721c24; margin: 0;">SEM PAPEL</h2>
+                        <p style="font-weight: bold;">Bandeja 1 Vazia</p>
+                        <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 5px; width: 100%; margin-bottom: 20px;">
+                            <strong>Como resolver:</strong><br>
+                            1. Abra a bandeja de baixo.<br>
+                            2. Coloque papel A4.<br>
+                            3. Aperte "Continuar".
+                        </div>
+                        <div class="touch-btn" style="background: #28a745; color: white; width: 100%;">CONTINUAR</div>
+                        <div style="margin-top: 10px; font-size: 0.8em;">Ou pressione [ X ] para cancelar.</div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Mensagens de erro significativas</span>
+                <p class="justification">A mensagem é direta: "Sem Papel" na "Bandeja 1". Não usa códigos estranhos que ninguém entende.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Tratamento de erros</span>
+                <p class="justification">O sistema ensina passo a passo como consertar o problema, ajudando o usuário a continuar o trabalho.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Fácil reversão de ações</span>
+                <p class="justification">Se a pessoa não tiver papel na hora, pode cancelar tudo no botão X e voltar para o início sem travar a máquina.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="status-bar"><span>Trabalhando...</span><span>Ocupado</span></div>
+                    <div class="content" style="align-items: center; justify-content: center; text-align: center;">
+                        <h2 style="color: #007bff; margin: 0;">IMPRIMINDO</h2>
+                        <h1 style="font-size: 4em; margin: 10px 0; color: #333;">2 / 10</h1>
+                        <p>Páginas Concluídas</p>
+                        <div style="width: 100%; background: #e9ecef; height: 25px; border-radius: 15px; margin: 20px 0; overflow: hidden;">
+                            <div style="width: 20%; background: #28a745; height: 100%;"></div>
+                        </div>
+                        <div style="margin-top: 30px;">
+                            <p>Deseja parar?</p>
+                            <div class="touch-btn touch-btn-danger">CANCELAR TAREFA</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Feedback informativo</span>
+                <p class="justification">A tela mostra "Imprimindo" e quantas páginas faltam. Isso deixa o usuário tranquilo que a máquina está funcionando.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Usar displays analógicos</span>
+                <p class="justification">A barra verde enchendo é visual e fácil de entender rapidinho, melhor que ficar lendo números pequenos.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Verificação de ação destrutiva</span>
+                <p class="justification">O botão de Cancelar está bem visível em vermelho para caso o usuário tenha errado e queira parar logo para não gastar folha.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header" style="background: #fff3cd; color: #856404;">🛠️ MANUTENÇÃO</div>
+                    <div class="content">
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+                            <h3 style="margin-top:0;">Nível de Toner Baixo</h3>
+                            <p>O cartucho <strong>Preto (K)</strong> está acabando.</p>
+                            <div style="width: 100%; background: #eee; height: 10px; margin-top: 5px;">
+                                <div style="width: 8%; background: #dc3545; height: 100%;"></div>
+                            </div>
+                        </div>
+                        <div class="touch-btn">LIMPEZA DE CABEÇOTE</div>
+                        <div class="touch-btn">ALINHAR CARTUCHOS</div>
+                        <div style="margin-top: auto;">
+                            <div class="touch-btn touch-btn-primary">LEMBRAR DEPOIS</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Exibição de informações relevantes</span>
+                <p class="justification">O aviso aparece antes da tinta acabar de vez. Assim o usuário não começa um trabalho grande que vai dar errado no meio.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Prevenção de erros</span>
+                <p class="justification">Avisando sobre a limpeza necessária, evito que saiam impressões falhadas.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-dados">Entrada de Dados</span>
+                <span class="guideline-name">Minimização do número de ações</span>
+                <p class="justification">Coloquei o botão de "Limpeza" direto aqui. A pessoa resolve o problema na hora sem ter que procurar no menu.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header">Configurações</div>
+                    <div class="content">
+                        <div class="touch-btn" style="justify-content: space-between;">
+                            <span>🌐 Idioma</span> <span>PT-BR ></span>
+                        </div>
+                        <div class="touch-btn" style="justify-content: space-between;">
+                            <span>🛜 Rede / Wi-Fi</span> <span>Conectado ></span>
+                        </div>
+                        <div class="touch-btn" style="justify-content: space-between;">
+                            <span>🔋 Energia</span> <span>Eco ></span>
+                        </div>
+                        <div class="touch-btn" style="justify-content: space-between;">
+                            <span>🔊 Sons</span> <span>Médio ></span>
+                        </div>
+                        <div class="touch-btn" style="justify-content: space-between; border-color: #dc3545; color: #dc3545;">
+                            <span>🏭 Restaurar Fábrica</span> <span>></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Atender a usabilidade universal</span>
+                <p class="justification">A opção de Idioma fica fácil de achar, permitindo que qualquer pessoa use a máquina, mesmo que não fale português.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Suportar o controle do usuário</span>
+                <p class="justification">O usuário pode escolher o som, a economia de energia, etc. Ele sente que controla a máquina.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Manutenção do contexto visual</span>
+                <p class="justification">As setinhas (>) indicam que tem mais opções se clicar ali. Mantive o padrão visual para não confundir.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header">Histórico</div>
+                    <div class="content">
+                        <p style="font-size: 0.8em; color: #777;">Toque para repetir:</p>
+                        <div class="touch-btn" style="display: block; text-align: left; padding: 10px;">
+                            <div style="font-weight: bold;">📄 Cópia P&B (Hoje, 10:00)</div>
+                            <div style="font-size: 0.8em; color: #555;">10 cópias, A4</div>
+                            <div style="font-size: 0.8em; color: #28a745; text-align: right;">Sucesso</div>
+                        </div>
+                        <div class="touch-btn" style="display: block; text-align: left; padding: 10px;">
+                            <div style="font-weight: bold;">📧 Scan para Ana (Ontem)</div>
+                            <div style="font-size: 0.8em; color: #555;">PDF, Colorido</div>
+                            <div style="font-size: 0.8em; color: #28a745; text-align: right;">Sucesso</div>
+                        </div>
+                         <div class="touch-btn" style="display: block; text-align: left; padding: 10px; border-color: #dc3545;">
+                            <div style="font-weight: bold;">📄 Impressão (Falha)</div>
+                            <div style="font-size: 0.8em; color: #dc3545;">Atolamento de Papel</div>
+                            <div style="font-size: 0.8em; color: #dc3545; text-align: right;">Erro</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Eficiência de diálogo e raciocínio</span>
+                <p class="justification">A função "Repetir" deixa o usuário fazer de novo um trabalho complicado com um clique só, sem reconfigurar tudo.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Reconhecimento ao invés de memorização</span>
+                <p class="justification">O sistema mostra o que foi feito ontem para o usuário não precisar forçar a memória.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Feedback significativo (Status)</span>
+                <p class="justification">Usei verde para o que funcionou e vermelho para o que deu erro. Facilita identificar problemas passados.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header" style="background: #fff3cd; color: #856404;">⚠️ AVISO</div>
+                    <div class="dialog-overlay">
+                        <div class="icon-large">🚪</div>
+                        <h2>TAMPA ABERTA</h2>
+                        <p>Feche a tampa do scanner para iniciar.</p>
+                        <p style="font-size: 0.8em; color: #777;">A operação foi pausada.</p>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Prevenção de erros (Constraint)</span>
+                <p class="justification">A máquina não deixa copiar se a tampa estiver aberta. Isso evita que o usuário gaste tinta à toa fazendo uma cópia preta.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Mensagem de erro significativa</span>
+                <p class="justification">O desenho da tampa aberta e o texto curto explicam rapidinho o que tem que fazer (fechar).</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Feedback informativo</span>
+                <p class="justification">Avisa que está "Pausado". Assim o usuário sabe que não perdeu o trabalho, é só fechar a tampa que continua.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header" style="background: #f8d7da; color: #721c24;">❌ ERRO DE REDE</div>
+                    <div class="dialog-overlay">
+                        <div class="icon-large">🔌</div>
+                        <h3>FALHA NO ENVIO</h3>
+                        <p>Sem conexão com o servidor.</p>
+                        <div class="touch-btn touch-btn-primary" style="width:100%; margin-top: 20px;">🔄 TENTAR NOVAMENTE</div>
+                        <div class="touch-btn" style="width:100%;">💾 SALVAR NO PEN DRIVE</div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Tratamento de Erros (Alternativa)</span>
+                <p class="justification">Se a internet cair, o sistema sugere salvar no Pen Drive. Assim o usuário consegue terminar o trabalho de outro jeito.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Fácil reversão de ações</span>
+                <p class="justification">O botão "Tentar Novamente" ajuda a resolver rápido se a rede voltar, sem precisar configurar tudo de novo.</p>
+            </div>
+             <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Clareza visual de estado crítico</span>
+                <p class="justification">O cabeçalho vermelho mostra logo de cara que é um erro sério, diferente dos avisos amarelos.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="prototype-row">
+        <div class="device-wrapper">
+            <div class="device-chassis">
+                <div class="screen-lcd">
+                    <div class="header" style="background: #e2e3e5;">CONFIRMAÇÃO</div>
+                    <div class="dialog-overlay">
+                        <h3>CANCELAR TAREFA?</h3>
+                        <p>O trabalho atual será perdido.</p>
+                        <div style="display:flex; gap:10px; width:100%; margin-top:20px;">
+                            <div class="touch-btn" style="flex:1; background:#28a745; color:white;">NÃO (VOLTAR)</div>
+                            <div class="touch-btn touch-btn-danger" style="flex:1;">SIM, CANCELAR</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="physical-panel">
+                    <div class="hard-key key-home">⌂</div> <div class="hard-key">?</div> <div class="hard-key">↩</div> <div class="hard-key key-stop">X</div> <div class="hard-key key-start">▶</div>
+                </div>
+            </div>
+        </div>
+        <div class="analysis-wrapper">
+            <h3 class="analysis-title">Análise de Diretrizes</h3>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Verificação de ação destrutiva</span>
+                <p class="justification">Cancelar uma impressão grande dá prejuízo de tempo. O sistema pergunta "Tem certeza?" para não cancelar sem querer.</p>
+            </div>
+            <div class="guideline-block">
+                <span class="cat-tag cat-geral">Interação Geral</span>
+                <span class="guideline-name">Evite erros (Opção segura)</span>
+                <p class="justification">O botão "Não" é verde e vem primeiro para incentivar a pessoa a não cancelar se estiver na dúvida.</p>
+            </div>
+             <div class="guideline-block">
+                <span class="cat-tag cat-info">Exibição de Informações</span>
+                <span class="guideline-name">Mensagens concisas</span>
+                <p class="justification">A pergunta "Cancelar tarefa?" é curta e direta, para ser entendida na hora.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
